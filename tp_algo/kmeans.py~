@@ -2,6 +2,7 @@
 
 import random
 import sys
+from Distance import Distance
 
 def read_data(filename, skip_first_line = False, ignore_first_column = False):
     '''
@@ -27,31 +28,19 @@ def read_data(filename, skip_first_line = False, ignore_first_column = False):
         f.readline()
     
     data = []
+    i=0
     for line in f:
         line = line.split(",")
         del line[-1]
-        line[1:] = [ float(x) for x in line[1:] ]
-        line.insert(0,i+1)
+        line = [ float(x) for x in line ]
+        i+=1
+        line.insert(0,i)
         if ignore_first_column:
             line = line[1:]
         data.append(line)
     f.close()
     return data
 
-
-def read_iris_data(filename):
-    
-    data=read_data(filename)
-    for i in range(len(data)):
-        #del data[i][-1]
-        data[i].insert(0,i+1)
-#        if data[i][-1]==Iris-setosa:
-#            data[i][-1]=1
-#        if data[i][-1]==Iris-versicolor:
-#            data[i][-1]=2
-#        if data[i][-1]==Iris-virginica:
-#            data[i][-1]=3
-    return data
 
 
 def write_data(data, filename):
@@ -93,17 +82,97 @@ def generate_random_data(nb_objs, nb_attrs, frand = random.random):
         line = [i+1] + map(lambda x: frand(), range(nb_attrs))
         data.append(line)
     return(data)
+    
+def initialise(data,k):
+    centres = []
+    index = []
+    i=0    
+    while(len(centres) != k):
+        j = random.randint(0,len(data)-1)
+        if j not in index :
+ #           
+  #          data[j][0]=i
+            centres.append(data[j])
+            centres[i][0]=i+1
+            i+=1
+            index.append(j)
+            
+    return centres
+
+
+def calculerDistance(centres,graph, distance):# calcul de la distance
+    distances = []
+    dList=[]
+    
+    if distance=="euclidienne":
+        for j in range(len(graph)):   
+            dList=[] 
+            for k in range(len(centres)):
+                centre = centres[k]
+                dList.append((k+1,Distance().euclidienne(centre,graph[j])))
+           
+            distances.append(dList)
+    if distance=="manhattan":
+        for j in range(len(graph)):   
+             
+            for k in range(len(centres)):
+                centre = centres[k]
+                dList.append((k+1,Distance().manhattan(centre,graph[j])))
+                
+            distances.append(dList)
+    if distance=="minkowski":
+        for j in range(len(graph)):   
+             
+            for k in range(len(centres)):
+                centre = centres[k]
+                dList.append((k+1,Distance().minkowski(centre,graph[j])))
+                
+            distances.append(dList)
+    return distances
         
+def affectClass(distances):
+    triDistances=[]
+    classe=[]
+    for i in range(len(distances)):
+        triDistances.append(sorted(distances[i], key=lambda dist:dist[1]))
+    
+    for dist in triDistances:
+        classe.append(dist[0][0]) 
+    return classe
+
+def nouveauCentres(data,centres,classe):
+    newCenter=[]
+    print "gggggggggroupppppppe"
+    for k in range(1,len(centres)+1):
+        groupe=[]
+        for i in range(len(classe)):
+            if classe[i]==k:
+                groupe.append(data[i])
+        print groupe        
+        newCenter.append(Distance().barycentre(groupe))
+        newCenter[k-1][0]=k
+    return newCenter
+    
+def final():
+
+    
+    classe=affectClass("euclidienne")
+    centres=nouveauCentres(data,centres,classe)
+    calculerDistance(centres,graph, distance)
+    final()
+    return true
+
 
 # Exemples d'utilisation
 
 # D'abord on génère des données aléatoires
 
-#data = generate_random_data(5,6)
-
-data=read_iris_data("data_iris.csv")
-print "data généreé++++++++++++++++++++++++++++++++++++++++++"
+data = generate_random_data(3,2)
+print "ddddddddddaaaaaaaaaaaataaaaaaaaaaaaaa"
 print data
+#data=read_data("data_iris.csv")
+#print "data généreé++++++++++++++++++++++++++++++++++++++++++"
+
 
 
 # Ensuite on ecrit ces donnees dans un fichier
@@ -112,52 +181,29 @@ write_data(data, "out.csv")
 
 # Puis on relit ces donnees a partir du fichier
 
-data_read = read_data("Iris-setosa.csv")
+#data_read = read_data("Iris-setosa.csv")
 
 # Et on affiche les 2 jeux de donnees ainsi obtenus
 
 #print(data)
 
 #print(data_read)
-
-
-
-def initialise(k):
-    for line in data_read:
-        line = line[1:]
-        data.append(line)
-    centre = []
-    index = []
+   
     
-    while(len(centre) != k):
-        j = random.randint(0,len(data)-1)
-        if j not in index :
-            centre.append(data[j])
-            index.append(j)
-            
-    return centre
-
-
-def calculerDistance(centre,graph):# distanceCarre
-    distance = {}
-    for j in range(len(graph)):
-        distance[graph[j][0]] = {}
-        index = 0    
-        for k in range(len(centre)):
-            thisCentre = centre[k]
-            carre = 0
-            index += 1
-            for i in range(len(thisCentre)):
-                factor = thisCentre[i] - graph[j][i+1]
-                carre += factor * factor 
-            distance[graph[j][0]][index] = carre
-        
-    return distance
 # this funtion can calculate the distance between each centre and each point.
 # formule de donnee {no_observation:{no_centre: distance}}
 ####### TEST calculerDistance and initialise ######################################
-m = calculerDistance(initialise(3),data_read)
-#print(m)
+centres=initialise(data, 3)
+print "ccccceeeeeeeeeeeeeeeeeennnnnntrrrrreee"
+print centres
+
+m =nouveauCentres(data,centres,affectClass(calculerDistance(centres,data, "euclidienne")))
+print "ccccccccllllassssssse"
+print affectClass(calculerDistance(centres,data, "euclidienne"))
+#print calculerDistance(centres,data, "euclidienne")
+print "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+print(m)
+
 ###################################################################################
 
 
