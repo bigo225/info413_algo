@@ -2,6 +2,7 @@
 
 import random
 import sys
+import copy
 from Distance import Distance
 
 def read_data(filename, skip_first_line = False, ignore_first_column = False):
@@ -128,6 +129,7 @@ def calculerDistance(centres,graph, distance):# calcul de la distance
                 dList.append((k+1,Distance().minkowski(centre,graph[j])))
                 
             distances.append(dList)
+    print "distance", distances
     return distances
         
 def affectClass(distances):
@@ -153,61 +155,106 @@ def nouveauCentres(data,centres,classe):
         newCenter[k-1][0]=k
     return newCenter
     
-def final():
+def final(data, centres, distance):
 
+    distances = calculerDistance(centres,data, distance)
+    classe = affectClass(distances)
+    nouvCentres = nouveauCentres(data,centres,classe)
+
+    while nouvCentres != centres:
+        centres=copy.deepcopy(nouvCentres)
+        distances = calculerDistance(centres,data, distance)
+        classe = affectClass(distances)
+        nouvCentres = nouveauCentres(data,centres,classe)
     
-    classe=affectClass("euclidienne")
-    centres=nouveauCentres(data,centres,classe)
-    calculerDistance(centres,graph, distance)
-    final()
-    return true
-
+    print "dfghjklkkkkkkkkkkkkkkkkkkkkkkkk"
+   # if nouvCentres == centres:
+  #      return nouvCentres, classe
+ #   else:
+#        (nouvCentres,classe)=final(data, centres, distance)
+    
+    return nouvCentres, classe
 
 # Exemples d'utilisation
-
 # D'abord on génère des données aléatoires
-
-data = generate_random_data(3,2)
-print "ddddddddddaaaaaaaaaaaataaaaaaaaaaaaaa"
-print data
+#data = generate_random_data(3,2)
 #data=read_data("data_iris.csv")
-#print "data généreé++++++++++++++++++++++++++++++++++++++++++"
-
-
-
 # Ensuite on ecrit ces donnees dans un fichier
-
-write_data(data, "out.csv")
-
+#write_data(data, "out.csv")
 # Puis on relit ces donnees a partir du fichier
-
 #data_read = read_data("Iris-setosa.csv")
-
 # Et on affiche les 2 jeux de donnees ainsi obtenus
-
 #print(data)
-
 #print(data_read)
    
     
 # this funtion can calculate the distance between each centre and each point.
 # formule de donnee {no_observation:{no_centre: distance}}
 ####### TEST calculerDistance and initialise ######################################
-centres=initialise(data, 3)
-print "ccccceeeeeeeeeeeeeeeeeennnnnntrrrrreee"
-print centres
+#centres=initialise(data, 3)
+#print "ccccceeeeeeeeeeeeeeeeeennnnnntrrrrreee"
+#print centres
 
-m =nouveauCentres(data,centres,affectClass(calculerDistance(centres,data, "euclidienne")))
-print "ccccccccllllassssssse"
-print affectClass(calculerDistance(centres,data, "euclidienne"))
+#m =nouveauCentres(data,centres,affectClass(calculerDistance(centres,data, "euclidienne")))
+#print "ccccccccllllassssssse"
+#print affectClass(calculerDistance(centres,data, "euclidienne"))
 #print calculerDistance(centres,data, "euclidienne")
-print "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
-print(m)
+
 
 ###################################################################################
 
 
 
+################################--------MAIN------------##################################
+
+#---------menu------------
+print "++++++++++++++++++++++ BONJOUR, Bienvennu à K-MEANS ++++++++++++++++++++++"
+print ""
+
+print "1. Euclidienne"
+print "2. Manhattan"
+print "3. Minkowski"
+
+choix2=input("Veuillez le numero de la distance que vous souhaitez: ")
+print ""
+k=input("saisissez la valeur de k: ")
+print "" 
+print "1. données IRIS"
+print "2. données générées"
+
+choix1=input("Veuillez choisir un numero: ")
+
+
+if choix1==1:
+    data=read_data("data_iris.csv")
+    if choix2==1:
+        distance="euclidienne"
+    elif choix2==2:
+        distance="manhattan"
+    elif choix3==3:
+        distance="minkowski"
+    
+elif choix1==2:
+    l=input("entrez le nombre de ligne: ")
+    n=input("entrez le nombre de colonne: ")
+    data=generate_random_data(l,n)
+    if choix2==1:
+        distance="euclidienne"
+    elif choix2==2:
+        distance="manhattan"
+    elif choix3==3:
+        distance="minkowski"
+dataSorti=copy.deepcopy(data)    
+centres=initialise(data, k)
+(finalCentres,finalClasse) = final(data, centres, distance)
+
+write_data(dataSorti, "données d'entrée.csv")
+write_data(finalCentres, "centres.csv")
+
+for i in range(len(data)):
+    dataSorti[i].append(finalClasse[i])
+
+write_data(dataSorti, "données affectées.csv")
 
 
 

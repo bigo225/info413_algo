@@ -24,7 +24,7 @@ class Distance:
             print "erreur"
             return
         for i in range(len(centre)-1):
-            dist+=math.fabs(centre[i+1]-noeud[i+1])     
+            dist+=math.fabs(centre[i+1]-noeud[i+1])    
         return dist
         
     def euclidienne(self, centre, noeud):
